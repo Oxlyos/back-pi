@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const db = require('./config/db');
 
@@ -6,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 
+app.use(cors());
 app.use(express.json());
 
 async function testDB() {
@@ -23,6 +25,10 @@ testDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/questions', questionRoutes);
+
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Backend is connected!' });
+});
 
 app.get('/', (req, res) => {
     res.send('Bienvenue sur SkillBridge E-Learning Platform!');

@@ -8,7 +8,7 @@ class CourseController {
     static async getAllCourses(req, res) {
         try {
             const courses = await Course.getAll();
-            
+
             res.status(200).json({
                 success: true,
                 courses: courses
@@ -28,7 +28,7 @@ class CourseController {
         try {
             const { id } = req.params;
             const course = await Course.findById(id);
-            
+
             if (!course) {
                 return res.status(404).json({
                     success: false,
@@ -53,81 +53,6 @@ class CourseController {
 
         } catch (error) {
             console.error('Get course error:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Server error'
-            });
-        }
-    }
-
-    // Create course with videos and files (UPDATED - supports form data from frontend)
-    static async createCourse(req, res) {
-        try {
-            const { 
-                title, 
-                description, 
-                professor_introduction,
-                image_url,
-                video_links, // Array of video URLs from frontend
-                files // Array of file data from frontend
-            } = req.body;
-            
-            const professor_id = req.user.userId;
-
-            if (!title || !description) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Title and description are required'
-                });
-            }
-
-            // Create the course first
-            const courseId = await Course.create({
-                title,
-                description,
-                professor_id,
-                professor_introduction: professor_introduction || null,
-                image_url: image_url || null
-            });
-
-            // Add videos if provided
-            if (video_links && Array.isArray(video_links) && video_links.length > 0) {
-                for (let i = 0; i < video_links.length; i++) {
-                    const videoUrl = video_links[i];
-                    if (videoUrl && videoUrl.trim() !== '') {
-                        await Video.create({
-                            course_id: courseId,
-                            title: `Video ${i + 1}`,
-                            video_url: videoUrl.trim(),
-                            order_index: i + 1
-                        });
-                    }
-                }
-            }
-
-            // Add files if provided
-            if (files && Array.isArray(files) && files.length > 0) {
-                for (const file of files) {
-                    if (file.file_url) {
-                        await File.create({
-                            course_id: courseId,
-                            title: file.title || 'Course Material',
-                            file_url: file.file_url,
-                            file_type: file.file_type || 'pdf',
-                            file_size: file.file_size || null
-                        });
-                    }
-                }
-            }
-
-            res.status(201).json({
-                success: true,
-                message: 'Course created successfully with videos and files',
-                courseId: courseId
-            });
-
-        } catch (error) {
-            console.error('Create course error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Server error'
