@@ -80,6 +80,82 @@ class CourseController {
         }
     }
 
+    // Create new course
+    static async createCourse(req, res) {
+        try {
+            const { title, description, professor_introduction } = req.body;
+            const professor_id = req.user.userId;
+
+            if (!title || !description) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Title and description are required'
+                });
+            }
+
+            // Handle thumbnail upload
+            let image_url = null;
+            if (req.files && req.files.thumbnail && req.files.thumbnail[0]) {
+                image_url = `/uploads/${req.files.thumbnail[0].filename}`;
+            }
+
+            // Create course
+            const courseId = await Course.create({
+                title,
+                description,
+                professor_id,
+                professor_introduction: professor_introduction || '',
+                image_url
+            });
+
+            // Handle PDF files if uploaded
+            if (req.files && req.files.coursePdfFiles) {
+                for (const pdfFile of req.files.coursePdfFiles) {
+                    await File.create({
+                        course_id: courseId,
+                        title: pdfFile.originalname,
+                        file_url: `/uploads/${pdfFile.filename}`,
+                        file_type: 'pdf',
+                        file_size: pdfFile.size
+                    });
+                }
+            }
+
+            // Handle video links if provided
+            if (req.body.video_links) {
+                const videoLinks = Array.isArray(req.body.video_links)
+                    ? req.body.video_links
+                    : [req.body.video_links];
+
+                for (let i = 0; i < videoLinks.length; i++) {
+                    const link = videoLinks[i];
+                    if (link && link.trim()) {
+                        await Video.create({
+                            course_id: courseId,
+                            title: `Video ${i + 1}`,
+                            video_url: link.trim(),
+                            order_index: i
+                        });
+                    }
+                }
+            }
+
+            res.status(201).json({
+                success: true,
+                message: 'Course created successfully',
+                courseId: courseId
+            });
+
+        } catch (error) {
+            console.error('Create course error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Server error',
+                error: error.message
+            });
+        }
+    }
+
     // Add video to course
     static async addVideo(req, res) {
         try {
