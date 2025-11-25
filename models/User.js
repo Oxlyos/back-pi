@@ -84,6 +84,23 @@ class User {
         }
     }
 
+    // Get all professors (for public display)
+    static async getAllProfessors() {
+        try {
+            const [rows] = await db.query(
+                `SELECT id, first_name, last_name, email, bio, profile_image, 
+                        years_experience, specialization, created_at 
+                 FROM users 
+                 WHERE role = 'professor'
+                 ORDER BY created_at DESC`
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error finding all professors:', error);
+            throw error;
+        }
+    }
+
     // Delete user by ID (optional)
     static async delete(id) {
         try {

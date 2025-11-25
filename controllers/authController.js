@@ -8,12 +8,12 @@ class AuthController {
     // Register new user
     static async register(req, res) {
         try {
-            const { 
-                first_name, 
-                last_name, 
-                phone_number, 
-                email, 
-                password, 
+            const {
+                first_name,
+                last_name,
+                phone_number,
+                email,
+                password,
                 role,
                 // Optional professor fields
                 bio,
@@ -202,7 +202,7 @@ class AuthController {
     static async getProfile(req, res) {
         try {
             const user = await User.findById(req.user.userId);
-            
+
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -231,15 +231,15 @@ class AuthController {
     static async updateProfile(req, res) {
         try {
             const userId = req.user.userId;
-            const { 
+            const {
                 first_name,
                 last_name,
-                bio, 
-                profile_image, 
-                years_experience, 
+                bio,
+                profile_image,
+                years_experience,
                 specialization,
                 university,
-                major 
+                major
             } = req.body;
 
             const updates = [];
@@ -362,6 +362,35 @@ class AuthController {
 
         } catch (error) {
             console.error('Get profile by ID error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Server error'
+            });
+        }
+    }
+
+    // Get all professors (public endpoint for landing page)
+    static async getAllProfessors(req, res) {
+        try {
+            const professors = await User.getAllProfessors();
+
+            // Format professors for frontend
+            const formattedProfessors = professors.map(prof => ({
+                id: prof.id,
+                name: `${prof.first_name} ${prof.last_name}`,
+                title: prof.specialization || 'Professor',
+                image: prof.profile_image || 'assets/default-professor.png',
+                description: prof.bio || '',
+                socialLinks: { linkedin: '#' }
+            }));
+
+            res.status(200).json({
+                success: true,
+                professors: formattedProfessors
+            });
+
+        } catch (error) {
+            console.error('Get all professors error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Server error'

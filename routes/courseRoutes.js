@@ -20,8 +20,8 @@ router.post('/',
     CourseController.createCourse
 );
 
-// Add announcement to course (requires authentication)
-router.post('/:id/announcements', authenticateToken, CourseController.addAnnouncement);
+// REMOVED: Announcement route is now handled by announcementRoutes.js
+// router.post('/:id/announcements', authenticateToken, CourseController.addAnnouncement);
 
 // Add video to course (requires authentication)
 router.post('/:id/videos', authenticateToken, CourseController.addVideo);
